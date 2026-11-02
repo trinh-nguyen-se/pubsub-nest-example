@@ -1,0 +1,39 @@
+{
+  "name": "pubsub-nest-example",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.0.8",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "infra:up": "docker compose up -d --wait",
+    "infra:down": "docker compose down -v",
+    "infra:reset": "docker compose down -v && docker compose up -d --wait",
+    "generate": "pnpm --filter @pubsub/contract generate",
+    "check:generated": "pnpm --filter @pubsub/contract generate --check",
+    "build": "pnpm -r --filter './packages/**' build && pnpm -r --filter './apps/**' build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "gate": "pnpm check:generated && pnpm typecheck && pnpm test",
+    "dev": "node scripts/dev.mjs",
+    "e2e": "node scripts/e2e-sync.mjs",
+    "lab": "tsx scripts/fence-lab.ts"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "@apollo/protobufjs"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/pg": "^8.23.1",
+    "ioredis": "^5.11.1",
+    "pg": "^8.23.1",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.5"
+  }
+}

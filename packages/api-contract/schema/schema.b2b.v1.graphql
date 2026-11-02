@@ -1,0 +1,80 @@
+"""Hợp đồng đọc CMS · view B2B · v1.
+
+SINH TỰ ĐỘNG từ zod contract. Đừng sửa tay — chạy `pnpm generate`."""
+
+type Supplier {
+  """Mã supplier, ổn định vĩnh viễn (ví dụ s_218)."""
+  id: ID!
+  """Tên thương mại hiển thị cho khách."""
+  name: String!
+  """Mã số thuế dùng cho đối soát và hợp đồng."""
+  taxCode: String
+  """Giá vốn CMS (Money dạng string, không dùng float)."""
+  costRate: String!
+  """Biên lợi nhuận áp cho supplier."""
+  margin: String!
+  """Số phòng/ghế CMS cam kết giữ cho B2B."""
+  allotment: Int!
+  """Tăng mỗi lần ghi. Consumer dùng để bỏ message cũ/trùng."""
+  version: Int!
+}
+
+type Country {
+  """Mã quốc gia ISO 3166-1 alpha-2 (ví dụ VN)."""
+  id: ID!
+  """Tên quốc gia hiển thị."""
+  name: String!
+  """Ghi chú thuế nội bộ dùng cho đối soát B2B."""
+  taxNote: String
+  """Tăng mỗi lần ghi, dùng để lọc message trùng."""
+  version: Int!
+}
+
+type PageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+}
+
+enum ChangeType {
+  CREATED
+  UPDATED
+  DELETED
+}
+
+type SyncChange {
+  """Số thứ tự tăng dần, dùng làm cursor."""
+  seq: Int!
+  """Loại entity (supplier, country, …)."""
+  entity: String!
+  """Khoá của entity."""
+  id: ID!
+  """Version tại thời điểm thay đổi."""
+  version: Int!
+  """created | updated | deleted — deleted là tombstone."""
+  changeType: ChangeType!
+}
+
+type SupplierConnection {
+  nodes: [Supplier!]!
+  pageInfo: PageInfo!
+}
+
+type CountryConnection {
+  nodes: [Country!]!
+  pageInfo: PageInfo!
+}
+
+type Query {
+  """Kéo một supplier theo id. Trả null nếu đã bị xoá."""
+  supplier(id: ID!): Supplier
+  """Danh sách supplier đang sống, phân trang bằng cursor id."""
+  suppliers(first: Int = 50, after: String): SupplierConnection!
+  """Kéo một country theo id. Trả null nếu đã bị xoá."""
+  country(id: ID!): Country
+  """Danh sách country đang sống, phân trang bằng cursor id."""
+  countries(first: Int = 50, after: String): CountryConnection!
+  """Mọi thay đổi sau một seq, kể cả tombstone. Đường bù khi mất message."""
+  changes(afterSeq: Int!, limit: Int = 200): [SyncChange!]!
+  """Seq cao nhất đã chắc chắn đọc được. Dùng làm mốc khi sync lần đầu."""
+  headSeq: Int!
+}
